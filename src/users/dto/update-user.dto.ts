@@ -1,9 +1,11 @@
-import { IsEmail, IsStrongPassword } from 'class-validator';
+import { IsEmail, IsOptional, IsStrongPassword } from 'class-validator';
 
-export class CreateUserDto {
+export class UpdateUserDto {
+  @IsOptional()
   @IsEmail()
   email: string;
 
+  @IsOptional()
   @IsStrongPassword()
   password: string;
 }
