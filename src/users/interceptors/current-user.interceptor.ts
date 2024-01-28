@@ -7,6 +7,8 @@ import {
 import { Observable } from 'rxjs';
 import { UsersService } from '../users.service';
 
+// NO LONGER USED BECAUSE OF LIFECYCLE ISSUE
+////////////////////////////////////////////
 @Injectable()
 export class CurrentUserInterceptor implements NestInterceptor {
   constructor(private usersService: UsersService) {}

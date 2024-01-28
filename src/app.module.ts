@@ -8,6 +8,10 @@ import { ReportsModule } from './reports/reports.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from './users/user.entity';
 import { Report } from './reports/report.entity';
+import { RolesModule } from './roles/roles.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { Role } from './roles/role.entity';
+import { Permission } from './permissions/permission.entity';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cookieSession = require('cookie-session');
 
@@ -22,7 +26,8 @@ const cookieSession = require('cookie-session');
           type: 'sqlite',
           database: config.get<string>('DB_NAME'),
           synchronize: true,
-          entities: [User, Report],
+          entities: [User, Role, Permission, Report],
+          // logging: true,
         };
       },
     }),
@@ -32,6 +37,8 @@ const cookieSession = require('cookie-session');
     }),
     UsersModule,
     ReportsModule,
+    RolesModule,
+    PermissionsModule,
   ],
   controllers: [AppController],
   providers: [

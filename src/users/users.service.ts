@@ -1,26 +1,34 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Role } from '../roles/role.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private repo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(Role) private roleRepository: Repository<Role>,
+  ) {}
 
   create(email: string, password: string) {
-    const user = this.repo.create({ email, password });
+    const user = this.userRepository.create({ email, password });
 
-    return this.repo.save(user);
+    return this.userRepository.save(user);
   }
 
-  findOne(id: number) {
+  async findOne(id: number) {
     if (!id) return null;
 
-    return this.repo.findOneBy({ id });
+    const user = await this.userRepository.find({
+      where: { id },
+    });
+
+    return user[0];
   }
 
   find(email: string) {
-    return this.repo.find({ where: { email } });
+    return this.userRepository.find({ where: { email } });
   }
 
   async update(id: number, attrs: Partial<User>) {
@@ -32,7 +40,7 @@ export class UsersService {
 
     Object.assign(user, attrs);
 
-    return this.repo.save(user);
+    return this.userRepository.save(user);
   }
 
   async remove(id: number) {
@@ -42,6 +50,43 @@ export class UsersService {
       throw new NotFoundException('user not found');
     }
 
-    return this.repo.remove(user);
+    return this.userRepository.remove(user);
+  }
+
+  async getUserDetails(id: number) {
+    if (!id) return null;
+
+    const user = await this.userRepository.find({
+      where: { id },
+      relations: ['roles', 'roles.permissions'],
+    });
+
+    return user[0];
+  }
+
+  async associateRolesWithUser(
+    userId: number,
+    roleIds: number[],
+  ): Promise<void> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const roles = await this.roleRepository.find({
+      where: { id: In(roleIds) },
+    });
+
+    if (roles.length !== roleIds.length) {
+      throw new NotFoundException('One or more roles not found');
+    }
+
+    user.roles = roles;
+
+    await this.userRepository.save(user);
   }
 }

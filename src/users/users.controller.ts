@@ -20,6 +20,7 @@ import { AuthService } from './auth.service';
 import { CurrentUser } from './docorators/current-user.decorator';
 import { User } from './user.entity';
 import { AuthGuard } from '../guards/auth.guard';
+import { AssociateRolesDto } from './dto/associate-roles.dto';
 
 @Controller('auth')
 export class UsersController {
@@ -87,5 +88,14 @@ export class UsersController {
   @Delete('/:id')
   removeUser(@Param('id') id: string) {
     return this.usersService.remove(+id);
+  }
+
+  @Post(':id/roles/associate')
+  async associateRolesWithUser(
+    @Param('id') userId: string,
+    @Body() associateRolesDto: AssociateRolesDto,
+  ): Promise<void> {
+    const { roleIds } = associateRolesDto;
+    await this.usersService.associateRolesWithUser(+userId, roleIds);
   }
 }
